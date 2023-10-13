@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mainActivity">
+
+    <activity
+        android:id="@+id/mainActivity"
+        android:name="com.example.noteme.MainActivity"
+        android:label="MainActivity"
+        tools:layout="@layout/home_screen">
+        <action
+            android:id="@+id/action_FirstFragment_to_SecondFragment"
+            app:destination="@id/newNote" />
+    </activity>
+
+    <activity
+        android:id="@+id/newNote"
+        android:name="com.example.noteme.NewNote"
+        android:label="NewNote"
+        tools:layout="@layout/new_note">
+        <action
+            android:id="@+id/action_FirstFragment_to_SecondFragment"
+            app:destination="@id/mainActivity" />
+    </activity>
+</navigation>
