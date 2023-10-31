@@ -27,6 +27,7 @@ public class SQLiteManager extends SQLiteOpenHelper {
     private static final String DESC_FIELD = "desc";
     private static final String DELETED_FIELD = "deleted";
     private static final String COLOR_FIELD = "color";
+    private static final String IMAGE_FIELD = "image";
 
     @SuppressLint("SimpleDateFormat")
     private static final DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
@@ -64,7 +65,9 @@ public class SQLiteManager extends SQLiteOpenHelper {
                 .append(DELETED_FIELD)
                 .append(" TEXT, ")
                 .append(COLOR_FIELD)
-                .append(" TEXT)");
+                .append(" TEXT, ")
+                .append(IMAGE_FIELD)
+                .append(" BLOB)");
 
 
         sqLiteDatabase.execSQL(sql.toString());
@@ -72,7 +75,8 @@ public class SQLiteManager extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-
+        /*sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+        onCreate(sqLiteDatabase);*/
     }
 
     //Function for when note is created will add it to the existing table
@@ -85,6 +89,7 @@ public class SQLiteManager extends SQLiteOpenHelper {
         contentValues.put(DESC_FIELD, note.getDescription());
         contentValues.put(DELETED_FIELD, getStringFromDate(note.getDeleted()));
         contentValues.put(COLOR_FIELD, note.getNoteColor());
+        contentValues.put(IMAGE_FIELD, note.getImage());
 
         sqLiteDatabase.insert(TABLE_NAME, null, contentValues);
     }
@@ -103,11 +108,27 @@ public class SQLiteManager extends SQLiteOpenHelper {
                     String stringDeleted = result.getString(4);
                     Date deleted = getDateFromString(stringDeleted);
                     String color = result.getString(5);
-                    Note note = new Note(id,title,desc,deleted, color);
+                    byte[] image = result.getBlob(6);
+                    Note note = new Note(id,title,desc,deleted, color, image);
                     Note.noteArrayList.add(note);
                 }
             }
         }
+    }
+
+    //Lets table data to be overwritten if required
+    public void updateNoteInDB(Note note)
+    {
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(ID_FIELD, note.getId());
+        contentValues.put(TITLE_FIELD, note.getTitle());
+        contentValues.put(DESC_FIELD, note.getDescription());
+        contentValues.put(DELETED_FIELD, getStringFromDate(note.getDeleted()));
+        contentValues.put(COLOR_FIELD, note.getNoteColor());
+        contentValues.put(IMAGE_FIELD, note.getImage());
+
+        sqLiteDatabase.update(TABLE_NAME, contentValues, ID_FIELD + " =? ", new String[]{String.valueOf(note.getId())});
     }
 
     private static String getStringFromDate(Date date) {

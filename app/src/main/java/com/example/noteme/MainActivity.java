@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import androidx.appcompat.widget.SearchView;
@@ -23,12 +24,51 @@ public class MainActivity extends AppCompatActivity {
         //Initialize the list which will hold notes
         initWidgets();
 
-        //Create object called note adapter which will allow use to adapt/translate the data from the DB
-        NoteAdapter noteAdapter = new NoteAdapter(getApplicationContext(), Note.noteArrayList);
-        noteListView.setAdapter(noteAdapter);
+        setNoteAdapter();
 
         //Call custom function to get data
         loadFromDBToMemory();
+
+        //Allow list items have onclick which allows them to be editied
+        noteListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l)
+            {
+                Note selectedNote = (Note) noteListView.getItemAtPosition(position);
+                Intent editNoteIntent = new Intent(getApplicationContext(), NewNote.class);
+                editNoteIntent.putExtra(Note.NOTE_EDIT_EXTRA, selectedNote.getId());
+                startActivity(editNoteIntent);
+            }
+        });
+
+        //Assign button to variable
+        newNote = findViewById(R.id.newNoteButton);
+        //Create onclick listener which will move to new note page
+        newNote.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                newNote(view);
+            }
+        });
+    }
+
+    //Custom function to assign listview to variable
+    private void initWidgets(){
+        noteListView = findViewById(R.id.listView);
+    }
+
+    //Custom function to initial SQLite manager which will pull data and add it to list
+    private void loadFromDBToMemory()
+    {
+        SQLiteManager sqLiteManager = SQLiteManager.instanceOfDatabase(this);
+        sqLiteManager.populateNoteListArray();
+    }
+
+    //Custom function to set adapter to take data from DB
+    private void setNoteAdapter(){
+        NoteAdapter noteAdapter = new NoteAdapter(getApplicationContext(), Note.nonDeletedNotes());
+        noteListView.setAdapter(noteAdapter);
 
         //Assign the virtual searchView to variable
         search = findViewById(R.id.searchView);
@@ -50,38 +90,10 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-
-        //Assign button to variable
-        newNote = findViewById(R.id.newNoteButton);
-        //Create onclick listener which will move to new note page
-        newNote.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                newNote();
-            }
-        });
-    }
-
-    //Custom function to assign listview to variable
-    private void initWidgets(){
-        noteListView = findViewById(R.id.listView);
-    }
-
-    //Custom function to initial SQLite manager which will pull data and add it to list
-    private void loadFromDBToMemory()
-    {
-        SQLiteManager sqLiteManager = SQLiteManager.instanceOfDatabase(this);
-        sqLiteManager.populateNoteListArray();
-    }
-
-    //Custom function to set adapter to take data from DB
-    private void setNoteAdapter(){
-        NoteAdapter noteAdapter = new NoteAdapter(getApplicationContext(), Note.noteArrayList);
-        noteListView.setAdapter(noteAdapter);
     }
 
     //Custom function which creates intent to switch pages
-    private void newNote(){
+    private void newNote(View view){
         Intent intent = new Intent(this, NewNote.class);
         startActivity(intent);
     }
